@@ -1,6 +1,7 @@
 #C/C++ Simple SQLite Binding Wrapper Functions
 
 A simple wrapper to use SQLite parameter binding in a single exec call. 
+Binding simplifies SQL and protects against SQL injection.
 
 ##sqlite3_bind_exec:
 
