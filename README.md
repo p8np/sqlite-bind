@@ -86,7 +86,7 @@ starts at a specific offset. For example, to contain 100 strings, each less than
 the 12th string would be `array+(11*50)`. This occurs in bulk loading scenarios,
 so this marco supports it.
 
-The sqlite_bind_array functions execute a single sql statement, multiple statments
+The `sqlite_bind_array` functions execute a single sql statement, multiple statments
 separated by **;** are NOT supported. The stack arguments are processed in the
 order they occur in the statement (left to right).
 
