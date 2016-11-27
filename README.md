@@ -15,7 +15,7 @@ the passing of extra parameters with the argument (such as the size parameter
 in the `SQLITE_BIND_BLOB` macro). 
 
 Like `sqlite_exec`, the `sqlite3_bind_exec` functions will process multiple sql 
-statements that are separated by ';'. The stack arguments are processed in the
+statements that are separated by **;**. The stack arguments are processed in the
 order they occur in the statements (left to right). 
 
 ##Pseudo code examples:
@@ -55,8 +55,8 @@ The `sqlite_bind_array` functions are a convienence for inserting arrays
 of data in a single call using the argument binding features of sqlite.
  
 The bind_array functions do not return results right now. There does not
-not seem to be a need to execute a set of *selects* with an array of data.
-*inserts* and *updates* are better suited to this feature. The functions
+not seem to be a need to execute a set of **selects** with an array of data.
+**inserts** and **updates** are better suited to this feature. The functions
 will return an error if the statement has result columns.
 
 In some RDMS array binding for inserts can be significantly more efficient.
@@ -87,10 +87,10 @@ the 12th string would be `array+(11*50)`. This occurs in bulk loading scenarios,
 so this marco supports it.
 
 The sqlite_bind_array functions execute a single sql statement, multiple statments
-separated by *;* are NOT supported. The stack arguments are processed in the
+separated by **;** are NOT supported. The stack arguments are processed in the
 order they occur in the statement (left to right).
 
-##Psuedo code examples:
+##Pseudo code examples:
 
 ```C
 void *bitmaps[3];   
