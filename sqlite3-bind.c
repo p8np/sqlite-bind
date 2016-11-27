@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------------
-** SQLite C API - Parameter binding helper for SQLite.
+** sqlite3-bind: SQLite C API - Parameter binding helper for SQLite.
 ** ---------------------------------------------------------------------------
 ** Copyright (c) 2016 by Payton Bissell, payton.bissell@gmail.com
 ** ---------------------------------------------------------------------------
@@ -53,8 +53,8 @@ const char *sqlite3_bind_errmsg(sqlite3 *db)
   { case SQLITE_ERR_BIND_STACK_NOT_TERMINATED    : return "sqlite3-bind: no end marker after all params are bound.";
     case SQLITE_ERR_BIND_STACK_MISSING_PARAMS    : return "sqlite3-bind: end marker before all params are bound.";
     case SQLITE_ERR_BIND_STACK_GUIDE_INVALID     : return "sqlite3-bind: guide marker was not recognized.";
-    case SQLITE_ERR_BIND_RESULT_COLUMNS_COUNT    : return "sqlite3-bind: the number of result columns does not match setup.";
-    case SQLITE_ERR_BIND_ARRAY_CANT_HAVE_RESULTS : return "sqlite3-bind: for now the bind_array functions cannot return results.";
+    case SQLITE_ERR_BIND_RESULT_COLUMNS_COUNT    : return "the number of result columns does not match setup.";
+    case SQLITE_ERR_BIND_ARRAY_CANT_HAVE_RESULTS : return "for now the bind_array functions cannot return results.";
   }
   return sqlite3_errmsg(db);
 }
