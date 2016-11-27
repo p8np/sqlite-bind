@@ -5,7 +5,7 @@ sqlite_bind_exec:
 
 The sqlite_bind_exec functions follow the sqlite_exec API pattern
 but support variable arguments that will be bound to '?' markers
-in the sql statement.
+in the sql statements.
 
 Variable arguments must use the SQLITE_BIND_XXX macros to provide type
 information, to cast the argument which notifies the compiler of the type and
