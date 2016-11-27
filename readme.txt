@@ -1,4 +1,4 @@
-A simple call to use SQLite parameter binding in a single exec call. 
+A simple wrapper to use SQLite parameter binding in a single exec call. 
 
 sqlite_bind_exec:
 
