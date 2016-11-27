@@ -39,8 +39,7 @@ static const char *tbl = "drop table if exists re_trans;"
 ");";
 
 /* ---------------------------------------------------------------------------
-** INTERNAL random guide bytes that provide some confidence that the stack 
-** variables are the correct type
+** Close the open DB.
 */
 static int i_close(const char *msg, sqlite3 *db) 
 { if (msg) printf("Load Error: %s\n", msg); 
@@ -49,8 +48,7 @@ static int i_close(const char *msg, sqlite3 *db)
 }
 
 /* ---------------------------------------------------------------------------
-** INTERNAL random guide bytes that provide some confidence that the stack 
-** variables are the correct type
+** Create DB and fill from realestate.csv
 */
 int main()
 { char row[1024], *street, *city, *zip, *state, *beds, *baths, *sqft, *type, *price, *lat, *lng;
