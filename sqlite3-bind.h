@@ -47,11 +47,12 @@ extern "C" {
 ** return codes are those returned by SQLite. Using negative result/error
 ** codes until more research can be done. 
 */
-#define SQLITE_ERR_BIND_STACK_NOT_TERMINATED  (-1)   // no end marker after all params are bound
-#define SQLITE_ERR_BIND_STACK_MISSING_PARAMS  (-2)   // end marker before all params are bound
-#define SQLITE_ERR_BIND_STACK_GUIDE_INVALID   (-3)   // guide marker was not recognized.
-#define SQLITE_ERR_BIND_RESULT_COLUMNS_COUNT  (-4)   // the number of result columns does not match setup
-
+#define SQLITE_ERR_BIND_STACK_NOT_TERMINATED    (-1)   // no end marker after all params are bound
+#define SQLITE_ERR_BIND_STACK_MISSING_PARAMS    (-2)   // end marker before all params are bound
+#define SQLITE_ERR_BIND_STACK_GUIDE_INVALID     (-3)   // guide marker was not recognized.
+#define SQLITE_ERR_BIND_RESULT_COLUMNS_COUNT    (-4)   // the number of result columns does not match setup
+#define SQLITE_ERR_BIND_ARRAY_CANT_HAVE_RESULTS (-5)   // for now the bind_array functions cannot return results
+                                                       // a query that generates results will create this error
 
 /* ---------------------------------------------------------------------------
 ** INTERNAL random guide bytes that provide some confidence that the stack 
@@ -116,6 +117,11 @@ extern "C" {
 */
 
 /* ---------------------------------------------------------------------------
+** Public function to use in-place of sqlite3_errmsg
+*/
+const char *sqlite3_bind_errmsg(sqlite3 *db);
+
+/* ---------------------------------------------------------------------------
 ** User macros for pushing params on the stack for binding, provide guide marker and casting
 */
 #define SQLITE_BIND_BLOB(b, s)    I_SQLITE_BIND_TYPE_BLOB, (int)(s), (const void*)(b)
@@ -135,6 +141,96 @@ int sqlite3_bind_exec      (sqlite3 *db, const char *sql, int (*callback)(void*,
 int sqlite3_bind_exec16    (sqlite3 *db, const void *sql, int (*callback)(void*,int,char**,char**), void *arg, ...);
 int sqlite3_bind_exec_va   (sqlite3 *db, const char *sql, int (*callback)(void*,int,char**,char**), void *arg, va_list params);
 int sqlite3_bind_exec_va16 (sqlite3 *db, const void *sql, int (*callback)(void*,int,char**,char**), void *arg, va_list params);
+
+/* ---------------------------------------------------------------------------
+** The sqlite_bind_array functions are a convienence for inserting arrays
+** of data in a single call using the argument binding features of sqlite.
+** 
+** The bind_array functions do not return results right now. There does not
+** not seem to be a need to execute a set of selects with an array of data.
+** 'inserts' and 'updates' are better suited to this feature. The functions
+** will return an error if the statement has result columns.
+**
+** Array binding for inserts can be significantly more efficient since the
+** sql statement need not be parsed for each inserted row.
+** 
+** Variable arguments must use the SQLITE_BIND_ARRAY_XXX macros to provide type
+** information, to cast the arguments which will help ensure the stack is
+** formatted correctly, and that the compiler can manage the casting. They also
+** facilitate the passing of extra information about certain types, e.g. the size
+** of a blob.  
+**
+** All the arrays passed to the insert functions must contain at least "rows" number
+** of elements. Native types (like int and double) are contiguous allocations e.g.
+** double dbl_array[SIZE]; or double *d = new double[SIZE]; 
+** Blobs and text are arrays of pointers where each pointer points to the storage
+** for that entry. This is my most common use-case, and these assumptions simplify
+** the interface. It would be easy enough to add the other cases, and to add macros
+** to specify.
+**
+** The sqlite_bind_array functions execute a single sql statement, multiple statments
+** separated by ';' are not supported. The stack arguments are processed in the
+** order they occur in the statement (left to right).
+**
+** Psuedo code examples:
+**
+** void *bitmaps[3];   
+** int sizes[3];
+** char **captions[3];
+** sqlite_int64 page_ids[3];
+** 
+*  for (i=0;i<3;i++) 
+** { bitmaps[i] = <pointer to image bitmap data probably unsigned char*>;
+**   sizes[i] = <size of this image bitmap>;
+**   captions[i] = <null terminated caption for this image>
+**   page_ids[i] = <page id of source of the image>
+** }  
+** 
+** int ret = sqlite_bind_array(
+**   db,                                                            // sqlite3* 
+**   "insert into images (caption, bitmap, pageid) values (?,?,?)"  // sql with parameters 
+**   3,                                                             // rows to insert
+**   SQLITE_BIND_ARRAY_TEXT(captions),                              // array of captions
+**   SQLITE_BIND_ARRAY_BLOB(bitmaps, sizes),                        // array of bitmaps and sizes for each
+**   SQLITE_BIND_ARRAY_INT64(page_ids),                             // array of page_ids
+**   SQLITE_BIND_ARRAY_END);                                        // end of variable args marker 
+** 
+** The BLOCK functions are useful when the allocation for strings is square (fixed size).
+** Each strings starts at a multiple of the first dimension, but each string is terminated
+** and must be less than the first dimension. Otherwise the array is an array of pointers
+** which can be used in a block too, but the BLOCK functions eliminate the need for the
+** array of pointers. 
+**
+** The stack must be terminated with the SQLITE_BIND_END marker or an error
+** will be returned.
+** 
+** The _va functions use a va_list instead of the stack to the immediate call, akin
+** to the vsprintf functions in the standard C library. They are provided to support
+** sqlite wrapper libraries so that the wrapper writer can expose binding function
+** however they choose, and can in turn call the bind_exec_va versions with the
+** sql arguments.
+**
+** ---------------------------------------------------------------------------
+*/
+
+/* ---------------------------------------------------------------------------
+** User macros for pushing params on the stack for binding arrays
+*/
+#define SQLITE_BIND_ARRAY_BLOB(ba,sa)    (I_SQLITE_BIND_TYPE_BLOB+1), (int*)(sa), (const void**)(ba)
+#define SQLITE_BIND_ARRAY_DOUBLE(da)     (I_SQLITE_BIND_TYPE_DOUBLE+1), (double*)(da)
+#define SQLITE_BIND_ARRAY_INT(ia)        (I_SQLITE_BIND_TYPE_INT+1), (int*)(ia)
+#define SQLITE_BIND_ARRAY_INT64(ia)      (I_SQLITE_BIND_TYPE_INT64+1), (sqlite3_int64*)(da)
+#define SQLITE_BIND_ARRAY_TEXT(ta)       (I_SQLITE_BIND_TYPE_TEXT+1), (const char**)(ta)
+#define SQLITE_BIND_ARRAY_TEXT16(ta)     (I_SQLITE_BIND_TYPE_TEXT16+1), (const void**)(ta)
+#define SQLITE_BIND_ARRAY_NULL           (I_SQLITE_BIND_TYPE_NULL+1)
+#define SQLITE_BIND_ARRAY_ZBLOB(s)       (I_SQLITE_BIND_TYPE_ZBLOB+1), (int)(s)
+
+#define SQLITE_BIND_BLOCK_TEXT(t,s)      (I_SQLITE_BIND_TYPE_TEXT+2), (int)(s), (const char*)(t)
+
+int sqlite3_bind_array      (sqlite3 *db, const char *sql, int rows, ...);
+int sqlite3_bind_array_va   (sqlite3 *db, const char *sql, int rows, va_list params);
+int sqlite3_bind_array16    (sqlite3 *db, const void *sql, int rows, ...);
+int sqlite3_bind_array_va16 (sqlite3 *db, const void *sql, int rows, va_list params);
 
 #ifdef __cplusplus
 }
