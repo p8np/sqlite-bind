@@ -24,7 +24,7 @@ char *caption = <caption>;
 int ret = sqlite_bind_exec(
   db, 
   "update images set caption=?, bitmap=? where pageid=?", 
-  NULL, NULL,  // no callback or callback arg because no results
+  NULL, NULL, 
   SQLITE_BIND_TEXT(caption), 
   SQLITE_BIND_BLOB(bitmap, size), 
   SQLITE_BIND_INT64(page_id), 
@@ -33,7 +33,7 @@ int ret = sqlite_bind_exec(
 int ret = sqlite_bind_exec(
   db, 
   "select bitmap, size from images where pageid=? or caption=?", 
-  callback, cb_arg, // callback to receive results
+  callback, cb_arg, 
   SQLITE_BIND_INT64(page_id), 
   SQLITE_BIND_TEXT(caption), 
   SQLITE_BIND_END);
