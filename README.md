@@ -1,9 +1,9 @@
-#C/C++ Simple SQLite Binding Wrapper Functions
+# C/C++ Simple SQLite Binding Wrapper Functions
 
 A simple wrapper to use SQLite parameter binding in a single exec call. 
 Binding simplifies SQL and protects against SQL injection.
 
-##sqlite3_bind_exec:
+## sqlite3_bind_exec:
 
 The `sqlite3_bind_exec` functions follow the `sqlite_exec` API pattern
 but support variable arguments that will be bound to '?' markers
@@ -19,7 +19,7 @@ Like `sqlite_exec`, the `sqlite3_bind_exec` functions will process multiple sql
 statements that are separated by **;**. The stack arguments are processed in the
 order they occur in the statements (left to right). 
 
-##Pseudo code examples:
+## Pseudo code examples:
 
 ```C
 sqlite_uint64 pageid = <pageid>;
@@ -50,7 +50,7 @@ will be returned (after the statement(s) are executed successfully).
 There are versions of the exec function that take a `va_list` to support libraries
 that wrap SQLite, or more complicated program structures.
 
-##sqlite3_bind_array:
+## sqlite3_bind_array:
 
 The `sqlite_bind_array` functions are a convienence for inserting arrays
 of data in a single call using the argument binding features of sqlite.
@@ -78,7 +78,7 @@ for that entry. This is my most common use-case, and these assumptions simplify
 the interface. It would be easy enough to add the other cases, and to add macros
 to specify.
  
-###Special case:
+### Special case:
 
 The `SQLITE_BIND_BLOCK_TEXT` macro supports a very specific use case in which
 a single allocation contains a set of variable length strings, but each string
@@ -91,7 +91,7 @@ The `sqlite_bind_array` functions execute a single sql statement, multiple statm
 separated by **;** are NOT supported. The stack arguments are processed in the
 order they occur in the statement (left to right).
 
-##Pseudo code examples:
+## Pseudo code examples:
 
 ```C
 void *bitmaps[3];   
